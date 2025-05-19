@@ -45,6 +45,7 @@ const Agent = ({
     };
 
     const onMessage = (message: Message) => {
+      console.log("Incoming message:", message);
       if (message.type === "transcript" && message.transcriptType === "final") {
         const newMessage = { role: message.role, content: message.transcript };
         setMessages((prev) => [...prev, newMessage]);
@@ -88,7 +89,7 @@ const Agent = ({
     }
 
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
-      console.log("handleGenerateFeedback");
+      console.log("Generate feedback here");
 
       const { success, feedbackId: id } = await createFeedback({
         interviewId: interviewId!,
@@ -115,30 +116,34 @@ const Agent = ({
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
   const handleCall = async () => {
-    setCallStatus(CallStatus.CONNECTING);
+  setCallStatus(CallStatus.CONNECTING);
 
-    if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-        },
-      });
-    } else {
-      let formattedQuestions = "";
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `- ${question}`)
-          .join("\n");
-      }
-
-      await vapi.start(interviewer, {
-        variableValues: {
-          questions: formattedQuestions,
-        },
-      });
+  if (type === "generate") {
+    await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+      variableValues: {
+        username: userName,
+        userid: userId,
+        tempo: "1.5",
+      },
+      clientMessages: [],
+      serverMessages: [],
+    });
+  } else {
+    let formattedQuestions = "";
+    if (questions) {
+      formattedQuestions = questions.map((q) => `- ${q}`).join("\n");
     }
-  };
+
+    await vapi.start(interviewer, {
+      variableValues: {
+        questions: formattedQuestions,
+      },
+      clientMessages: [],
+      serverMessages: [],
+    });
+  }
+};
+
 
   const handleDisconnect = () => {
     setCallStatus(CallStatus.FINISHED);

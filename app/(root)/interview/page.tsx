@@ -6,9 +6,9 @@ const Page = async () => {
   const user =  await getCurrentUser();
   return (
     <>
-        <h3>Interview Page</h3>
+        <h3> Generate your own Interview </h3>
 
-        <Agent userName={user?.name} userId={user?.id} type="generate" />
+        <Agent userName={user?.name || ''} userId={user?.id} type="generate" />
     </>
 )}
 
